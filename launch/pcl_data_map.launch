@@ -1,0 +1,11 @@
+<launch>
+    <node pkg="data_map_visualize_manager" type="point_cloud_processor" name="pcl_data_map_node" output="screen" ns="r1">
+        <param name="~input_pcl_topic"       value="pcl"/>
+        <param name="~output_pcl_topic"      value="output_pcl"/>
+        <param name="~base_frame"            value="base_footprint"/>
+        <param name="~map_height"            value="10.0"/>
+        <param name="~map_width"             value="10.0"/>
+        <param name="~map_resolution"        value="0.05"/>
+        <param name="~max_obstacle_height"   value="1.5"/>
+    </node>
+</launch>

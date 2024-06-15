@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="data_map_visualize_manager" type="processor_manager_node" name="data_map_visualize_manager" output="screen" ns="r1">
+        <rosparam file="$(find data_map_visualize_manager)/params/test_footprint_data_map_params.yaml" command="load"/>
+    </node>
+</launch>

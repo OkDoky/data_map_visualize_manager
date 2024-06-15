@@ -1,0 +1,10 @@
+<launch>
+    <node pkg="data_map_visualize_manager" type="footprint_processor" name="footprint_processor_node" output="screen">
+        <rosparam file="$(find data_map_visualize_manager)/params/test_footprint_data_map_params.yaml" command="load"/>
+        <param name="~base_frame"                         value="base_footprint"/>
+        <param name="~map_height"         type="double"   value="10.0"/>
+        <param name="~map_width"          type="double"   value="10.0"/>
+        <param name="~map_resolution"     type="double"   value="0.05"/>
+        <param name="~udpate_rate"        type="int"      value="10"/>
+    </node>
+</launch>

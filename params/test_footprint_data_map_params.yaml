@@ -1,0 +1,64 @@
+map_frame: "base_footprint"
+expected_update_rate: 20
+map_resolution: 0.05
+map_width: 10.0
+map_height: 10.0
+
+processors:
+  - data_map_visualize_manager/FootprintProcessor
+  - data_map_visualize_manager/PointCloud2Processor
+  - data_map_visualize_manager/GlobalPathProcessor
+  - data_map_visualize_manager/VelocityProcessor
+
+PointCloud2Processor:
+  base_frame: "base_footprint"
+  input_pcl_topic: "pcl"
+  output_pcl_topic: "transformed_pcl"
+  map_height: 10.0
+  map_width: 10.0
+  map_resolution: 0.05
+  update_rate: 10
+  max_obstacle_height: 1.5
+  data_value: 1  # 2^0
+
+FootprintProcessor:
+  footprint: 
+            [[-0.4,-0.24],
+             [-0.4, 0.24],
+             [0.1,  0.24],
+             [0.1, -0.24]]
+  data_value: 64  # 2^6
+  use_padding: true
+  padding_size: 0.07
+  base_frame: "base_footprint"
+  map_height: 10.0
+  map_width: 10.0
+  map_resolution: 0.05
+  udpate_rate: 10
+
+GlobalPathProcessor:
+  base_frame: "base_footprint"
+  path_topic: "global_planner/planner/plan"
+  map_height: 10.0
+  map_width: 10.0
+  map_resolution: 0.05
+  udpate_rate: 10
+  data_value: 32  # 2^4
+
+LocalPathProcessor:
+  base_frame: "base_footprint"
+  path_topic: "local_planner/planner/plan"
+  map_height: 10.0
+  map_width: 10.0
+  map_resolution: 0.05
+  udpate_rate: 10
+  data_value: 16  # 2^4
+
+VelocityProcessor:
+  topic_name: "feedback_vel"
+  expected_update_rate: 10
+  data_value: 100  ## 2^3
+  map_height: 10.0
+  map_width: 10.0
+  map_resolution: 0.05
+  udpate_rate: 10
