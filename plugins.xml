@@ -1,18 +1,18 @@
 <class_libraries>
     <library path="libdmvm">
-        <class name="data_map_visualize_manager/FootprintProcessor" type="dmvm::FootprintProcessor"  base_class_type="ProcessorInterface">
+        <class name="FootprintProcessor" type="dmvm::FootprintProcessor"  base_class_type="ProcessorInterface">
             <description>footprint to data map</description>
         </class>
-        <class name="data_map_visualize_manager/PointCloud2Processor" type="dmvm::PointCloud2Processor"   base_class_type="ProcessorInterface">
+        <class name="PointCloud2Processor" type="dmvm::PointCloud2Processor"   base_class_type="ProcessorInterface">
             <description>point cloud2 to data map</description>
         </class>
-        <class name="data_map_visualize_manager/GlobalPathProcessor" type="dmvm::PathProcessor"   base_class_type="ProcessorInterface">
+        <class name="GlobalPathProcessor" type="dmvm::PathProcessor"   base_class_type="ProcessorInterface">
             <description>path to data map</description>
         </class>
-        <class name="data_map_visualize_manager/LocalPathProcessor" type="dmvm::PathProcessor"   base_class_type="ProcessorInterface">
+        <class name="LocalPathProcessor" type="dmvm::PathProcessor"   base_class_type="ProcessorInterface">
             <description>path to data map</description>
         </class>
-        <class name="data_map_visualize_manager/VelocityProcessor" type="dmvm::VelocityProcessor"   base_class_type="ProcessorInterface">
+        <class name="VelocityProcessor" type="dmvm::VelocityProcessor"   base_class_type="ProcessorInterface">
             <description>velocity to data map</description>
         </class>
     </library>
