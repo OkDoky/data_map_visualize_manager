@@ -9,9 +9,12 @@ PLUGINLIB_EXPORT_CLASS(dmvm::FootprintProcessor, ProcessorInterface)
 namespace dmvm {
 FootprintProcessor::FootprintProcessor(){}
 void FootprintProcessor::initialize(const std::string& ns){
-    ROS_INFO("[FootprintProcessor] ns : %s", ns.c_str());
     nh_ = ros::NodeHandle(ns);
-    nh_.param<std::string>("base_frame", base_frame_, "base_footprint");
+    ps_nh_ = ros::NodeHandle(ros::this_node::getName());
+    ROS_INFO("[FootprintProcessor] ns : %s", ns.c_str());
+
+    ps_nh_.param<std::string>("map_frame", base_frame_, "base_footprint");
+    ROS_INFO("[FootprintProcessor] base frame : %s, processor node name : %s", base_frame_.c_str(), ros::this_node::getName().c_str());
     
     data_map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("data_map", 1);
 
