@@ -12,8 +12,10 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
+#include <sensor_msgs/LaserScan.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <geometry_msgs/Pose.h>
+#include <laser_geometry/laser_geometry.h>
 
 #include <tf2_ros/message_filter.h>
 #include <tf2_ros/transform_listener.h>
@@ -33,6 +35,7 @@ public:
     void getDataValue(unsigned char& data_value) const override;
 private:
     void onPointCloud2Received(const sensor_msgs::PointCloud2::ConstPtr& msg);
+    void onLaserScanReceived(const sensor_msgs::LaserScan::ConstPtr& msg);
     void processData(const sensor_msgs::PointCloud2& msg);
     void mapToWorld(unsigned int mx, unsigned int my, double& wx, double& wy);
     bool worldToMap(double wx, double wy, unsigned int& mx, unsigned int& my);
@@ -41,10 +44,11 @@ private:
     }
     void publishDataMap(const std::vector<unsigned char>& data);
 
+    std::string input_data_type_;
     std::string input_topic_;
     std::string output_topic_;
     std::string base_frame_;
-    ros::NodeHandle nh_, private_nh_;
+    ros::NodeHandle nh_, private_nh_, ps_nh_;
     ros::Subscriber subscriber_;
     ros::Publisher publisher_, data_map_pub_;
 
@@ -69,10 +73,14 @@ private:
 
     // lock data map
     std::mutex data_map_mutex_;
+
+    laser_geometry::LaserProjection projector_;
     
     // for reactive program
     rxcpp::subjects::subject<sensor_msgs::PointCloud2> pointcloud2_subject_;
     rxcpp::observable<sensor_msgs::PointCloud2> pointcloud2_observable_;
+    rxcpp::subjects::subject<sensor_msgs::PointCloud2> laserscan_subject_;
+    rxcpp::observable<sensor_msgs::PointCloud2> laserscan_observable_;
 };
 } // namespace dmvm
 #endif // POINTCLOUD2PROCESSOR_H
