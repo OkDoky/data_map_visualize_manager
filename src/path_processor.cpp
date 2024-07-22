@@ -12,8 +12,9 @@ void PathProcessor::initialize(const std::string& ns){
     ROS_INFO("[PathProcessor] ns : %s", ns.c_str());
     private_nh_ = ros::NodeHandle(ns);
     nh_ = ros::NodeHandle("");
+    ps_nh_ = ros::NodeHandle(ros::this_node::getName());
     private_nh_.param<std::string>("path_topic", path_topic_, "path");
-    private_nh_.param<std::string>("base_frame", base_frame_, "base_footprint");
+    ps_nh_.param<std::string>("map_frame", base_frame_, "base_footprint");
     private_nh_.param<bool>("stand_alone", stand_alone_, false);
     private_nh_.param<double>("update_rate", update_rate_, 10.0);
     if (update_rate_ != 0){
@@ -44,7 +45,6 @@ void PathProcessor::initialize(const std::string& ns){
     fixed_origin_.position.y = -map_height_ / 2.0 + map_resolution_;
     fixed_origin_.orientation.w = 1.0;
     update_thread_ = std::thread(&PathProcessor::transformThread, this);
-    // update_thread_.detach();
 }
 
 void PathProcessor::start(){
@@ -52,14 +52,14 @@ void PathProcessor::start(){
 }
 
 void PathProcessor::onPathReceived(const nav_msgs::Path::ConstPtr& msg){
-    // path_subject_.get_subscriber().on_next(*msg);
     last_path_ = *msg;
 }
 
 void PathProcessor::transformThread(){
     int sleep_rate_millis_ = static_cast<int>(sleep_rate_ * 1000.0);
     while (ros::ok()){
-        processData(last_path_);
+        if (!last_path_.poses.empty())
+            processData(last_path_);
         std::this_thread::sleep_for(std::chrono::milliseconds(sleep_rate_millis_)); //
     }
 }
@@ -67,23 +67,49 @@ void PathProcessor::transformThread(){
 void PathProcessor::processData(const nav_msgs::Path& last_path){
     // transform global frame path -> base frame cloud
     nav_msgs::Path transformed_path;
+    nav_msgs::Path pruned_path;
+
+    // update time
+    ros::Time current_time = ros::Time::now();
+
     if (!last_path.header.frame_id.empty() && last_path.header.frame_id != base_frame_){
-        transformed_path.header = last_path.header;
-        for (size_t i=0; i < last_path.poses.size(); i++){
+        for (const auto& pose : last_path.poses){
             try{
+                // lp.poses[i].header.stamp = lp.header.stamp;
                 geometry_msgs::PoseStamped transformed_pose;
-                tf2_buffer_.transform(last_path.poses[i], transformed_pose, base_frame_, ros::Duration(2.0));
+                tf2::doTransform(pose, transformed_pose, tf2_buffer_.lookupTransform(base_frame_, pose.header.frame_id, current_time, ros::Duration(2.0)));
+                // tf2_buffer_.transform(lp.poses[i], transformed_pose, base_frame_, ros::Duration(2.0));
                 transformed_path.poses.push_back(transformed_pose);
             } catch (tf2::TransformException &ex){
-                ROS_WARN("%s", ex.what());
+                ROS_WARN("[PathProcessor] transform exceptions, %s", ex.what());
                 return;
             }
         }
+        transformed_path.header.frame_id = base_frame_;
     }else{
         transformed_path = last_path;
     }
     transformed_path.header.frame_id = base_frame_;
     
+    // prun plan
+    double max_dist_path = 10.0;
+    bool pruned = false;
+    for (const auto& pose : transformed_path.poses){
+        double dist = hypot(pose.pose.position.x, pose.pose.position.y);
+        if (dist < max_dist_path){
+            max_dist_path = dist;
+            continue;
+        } else {
+            pruned_path.header.frame_id = base_frame_;
+            pruned_path.poses.insert(pruned_path.poses.end(), transformed_path.poses.begin() + (&pose - &transformed_path.poses[0]), transformed_path.poses.end());
+            pruned = true;
+            break;
+        }
+    }
+    if (!pruned) {
+        pruned_path = transformed_path;
+    }
+
     // Lock the mutex before updating data_map_
     std::lock_guard<std::mutex> lock(data_map_mutex_);
 
@@ -93,9 +119,9 @@ void PathProcessor::processData(const nav_msgs::Path& last_path){
     index_flags_.clear();
 
     // fill data map
-    for (size_t i = 0; i < transformed_path.poses.size(); i++) {
-        float px = transformed_path.poses[i].pose.position.x;
-        float py = transformed_path.poses[i].pose.position.y;
+    for (size_t i = 0; i < pruned_path.poses.size(); i++) {
+        float px = pruned_path.poses[i].pose.position.x;
+        float py = pruned_path.poses[i].pose.position.y;
 
         unsigned int mx, my;
         if (!worldToMap(px, py, mx, my)) {
