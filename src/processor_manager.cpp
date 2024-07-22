@@ -22,9 +22,10 @@ void ProcessorManager::initialize() {
         nh_.getParam("processors", processor_names);
 
         for (const auto& name : processor_names){
-            std::string ns = "~/" + name;
+            std::string ns = ros::this_node::getName() + "/" + name;
+            ROS_WARN("[ProcessorManager] ns : %s", ns.c_str());
             boost::shared_ptr<ProcessorInterface> processor = plugin_loader_.createInstance(name);
-            processor->initialize(name);
+            processor->initialize(ns);
             processors_.push_back(processor);
         }
     } catch (const pluginlib::PluginlibException& ex) {
