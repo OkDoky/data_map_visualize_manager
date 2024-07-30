@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
+#include <math.h>
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Path.h>
@@ -44,7 +45,7 @@ private:
 
     std::string path_topic_;
     std::string base_frame_;
-    ros::NodeHandle nh_, private_nh_;
+    ros::NodeHandle nh_, private_nh_, ps_nh_;
     ros::Subscriber subscriber_;
     ros::Publisher data_map_pub_;
     bool stand_alone_;
@@ -62,6 +63,7 @@ private:
     unsigned char default_value_;
     float map_height_, map_width_, map_resolution_;
     unsigned char data_value_;
+    unsigned char goal_value_;
     geometry_msgs::Pose fixed_origin_;
 
     // lock data map

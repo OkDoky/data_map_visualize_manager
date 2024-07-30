@@ -12,8 +12,9 @@ void VelocityProcessor::initialize(const std::string& ns){
     ROS_INFO("[VelocityProcessor] ns : %s", ns.c_str());
     private_nh_ = ros::NodeHandle(ns);
     nh_ = ros::NodeHandle("");
+    ps_nh_ = ros::NodeHandle(ros::this_node::getName());
     private_nh_.param<std::string>("velocity_topic", velocity_topic_, "cmd_vel");
-    private_nh_.param<std::string>("base_frame", base_frame_, "base_footprint");
+    ps_nh_.param<std::string>("map_frame", base_frame_, "base_footprint");
     private_nh_.param<bool>("stand_alone", stand_alone_, false);
     private_nh_.param<double>("arrow_scale", arrow_scale_, 1.0);
     subscriber_ = nh_.subscribe(velocity_topic_, 1, &VelocityProcessor::onVelocityReceived, this);

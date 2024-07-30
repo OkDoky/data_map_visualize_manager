@@ -11,11 +11,12 @@ void PointCloud2Processor::initialize(const std::string& ns){
     ROS_INFO("[PointCloud2Processor] ns : %s", ns.c_str());
     private_nh_ = ros::NodeHandle(ns);
     nh_ = ros::NodeHandle("");
+    ps_nh_ = ros::NodeHandle(ros::this_node::getName());
+    private_nh_.param<std::string>("input_data_type", input_data_type_, "LaserScan");
     private_nh_.param<std::string>("input_pcl_topic", input_topic_, "input_pcl");
     private_nh_.param<std::string>("output_pcl_topic", output_topic_, "output_pcl");
-    private_nh_.param<std::string>("base_frame", base_frame_, "base_footprint");
+    ps_nh_.param<std::string>("map_frame", base_frame_, "base_footprint");
     
-    subscriber_ = nh_.subscribe(input_topic_, 1, &PointCloud2Processor::onPointCloud2Received, this);
     publisher_ = nh_.advertise<sensor_msgs::PointCloud2>(output_topic_, 1);
     data_map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("data_map", 1);
 
@@ -38,10 +39,22 @@ void PointCloud2Processor::initialize(const std::string& ns){
     fixed_origin_.position.y = -4.95;
     fixed_origin_.orientation.w = 1.0;
 
-    pointcloud2_observable_ = pointcloud2_subject_.get_observable();
-    pointcloud2_observable_.subscribe([this](const sensor_msgs::PointCloud2& msg) {
-        this->processData(msg);
-    });
+    if (input_data_type_ == "PointCloud2") {
+        subscriber_ = nh_.subscribe(input_topic_, 1, &PointCloud2Processor::onPointCloud2Received, this);
+        publisher_ = nh_.advertise<sensor_msgs::PointCloud2>(output_topic_, 1);
+        pointcloud2_observable_ = pointcloud2_subject_.get_observable();
+        pointcloud2_observable_.subscribe([this](const sensor_msgs::PointCloud2& msg) {
+            this->processData(msg);
+        });
+    } else if (input_data_type_ == "LaserScan") {
+        subscriber_ = nh_.subscribe(input_topic_, 1, &PointCloud2Processor::onLaserScanReceived, this);
+        laserscan_observable_ = laserscan_subject_.get_observable();
+        laserscan_observable_.subscribe([this](const sensor_msgs::PointCloud2& msg) {
+            this->processData(msg);
+        });
+    } else {
+        
+    }
 }
 
 void PointCloud2Processor::start(){
@@ -52,11 +65,22 @@ void PointCloud2Processor::onPointCloud2Received(const sensor_msgs::PointCloud2:
     pointcloud2_subject_.get_subscriber().on_next(*msg);
 }
 
+void PointCloud2Processor::onLaserScanReceived(const sensor_msgs::LaserScan::ConstPtr& msg){
+    sensor_msgs::PointCloud2 cloud;
+    cloud.header = msg->header;
+    try {
+        projector_.projectLaser(*msg, cloud);
+    } catch (tf2::TransformException &ex){
+        ROS_WARN("[PointCloud2Processor] High Fidelity enabled, but TF returned a transform exception to frame %s : %s", base_frame_.c_str(), ex.what());
+    }
+    laserscan_subject_.get_subscriber().on_next(cloud);
+}
+
 void PointCloud2Processor::processData(const sensor_msgs::PointCloud2& msg){
     // transform sensor frame cloud -> base frame cloud
     sensor_msgs::PointCloud2 transformed_cloud;
     try{
-        tf2_buffer_.transform(msg, transformed_cloud, base_frame_);
+        tf2_buffer_.transform(msg, transformed_cloud, base_frame_, ros::Duration(0.0));
     } catch (tf2::TransformException &ex){
         ROS_WARN("%s", ex.what());
         return;

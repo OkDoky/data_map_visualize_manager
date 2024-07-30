@@ -43,7 +43,7 @@ private:
 
     std::string velocity_topic_;
     std::string base_frame_;
-    ros::NodeHandle nh_, private_nh_;
+    ros::NodeHandle nh_, private_nh_, ps_nh_;
     ros::Subscriber subscriber_;
     ros::Publisher data_map_pub_;
     bool stand_alone_;
