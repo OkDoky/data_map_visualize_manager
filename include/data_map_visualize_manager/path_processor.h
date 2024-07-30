@@ -63,6 +63,7 @@ private:
     unsigned char default_value_;
     float map_height_, map_width_, map_resolution_;
     unsigned char data_value_;
+    unsigned char goal_value_;
     geometry_msgs::Pose fixed_origin_;
 
     // lock data map

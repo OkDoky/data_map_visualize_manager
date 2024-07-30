@@ -32,9 +32,11 @@ void PathProcessor::initialize(const std::string& ns){
     private_nh_.param<float>("map_height", map_height_, 10.0);
     private_nh_.param<float>("map_width", map_width_, 10.0);
     private_nh_.param<float>("map_resolution", map_resolution_, 0.05);
-    int data_value_int;
+    int data_value_int, goal_value_int;
     private_nh_.param<int>("data_value", data_value_int, 64);
+    private_nh_.param<int>("goal_value", goal_value_int, 64);
     data_value_ = static_cast<unsigned char>(data_value_int);
+    goal_value_ = static_cast<unsigned char>(goal_value_int);
     size_x = static_cast<unsigned int>(map_width_ / map_resolution_);
     size_y = static_cast<unsigned int>(map_height_ / map_resolution_);
     data_map_size_ = static_cast<size_t>(size_x * size_y);
@@ -129,6 +131,11 @@ void PathProcessor::processData(const nav_msgs::Path& last_path){
         }
         unsigned int index = getIndex(mx, my);
         data_map_[index] = data_value_;
+
+        if (i == pruned_path.poses.size() - 1){
+            data_map_[index] = goal_value_;
+        }
+        
         if (index_flags_.find(index) == index_flags_.end()){
           occupied_indices_.push_back(index);
           index_flags_.insert(index);

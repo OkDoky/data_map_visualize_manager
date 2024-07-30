@@ -80,7 +80,7 @@ void PointCloud2Processor::processData(const sensor_msgs::PointCloud2& msg){
     // transform sensor frame cloud -> base frame cloud
     sensor_msgs::PointCloud2 transformed_cloud;
     try{
-        tf2_buffer_.transform(msg, transformed_cloud, base_frame_);
+        tf2_buffer_.transform(msg, transformed_cloud, base_frame_, ros::Duration(0.0));
     } catch (tf2::TransformException &ex){
         ROS_WARN("%s", ex.what());
         return;
