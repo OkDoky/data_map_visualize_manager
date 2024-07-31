@@ -41,6 +41,10 @@ public:
     void getCharMap(std::vector<unsigned char>& data_map) override;
     void getOccupiedIndices(std::vector<size_t>& occupied_indices) override;
     void getDataValue(unsigned char& data_value) const override;
+    void getGoalValue(unsigned char& goal_value) const override{goal_value = 0;}
+    void hasGoalValue(bool& has_goal) override{
+        has_goal = false;
+    }
     void startStandAlone();
 private:
     std::string formatPolygon(const std::vector<geometry_msgs::Point>& polygon);
