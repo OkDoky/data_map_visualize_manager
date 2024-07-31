@@ -69,6 +69,13 @@ void ProcessorManager::updateCombinedMap(){
         for (const auto& index: occupied_indices){
             combined_data_map_[index] += data_value;
         }
+        bool has_goal_ = false;
+        processor->hasGoalValue(has_goal_);
+        if (has_goal_){
+            unsigned char goal_value;
+            processor->getGoalValue(goal_value);
+            combined_data_map_[*(occupied_indices.end()-1)] += goal_value - data_value;
+        }
     }
 }
 
