@@ -16,6 +16,7 @@ void PointCloud2Processor::initialize(const std::string& ns){
     private_nh_.param<std::string>("input_pcl_topic", input_topic_, "input_pcl");
     private_nh_.param<std::string>("output_pcl_topic", output_topic_, "output_pcl");
     ps_nh_.param<std::string>("map_frame", base_frame_, "base_footprint");
+    ps_nh_.param<std::string>("fixed_frame", fixed_frame_, "map");
     
     publisher_ = nh_.advertise<sensor_msgs::PointCloud2>(output_topic_, 1);
     data_map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("data_map", 1);
@@ -80,7 +81,7 @@ void PointCloud2Processor::processData(const sensor_msgs::PointCloud2& msg){
     // transform sensor frame cloud -> base frame cloud
     sensor_msgs::PointCloud2 transformed_cloud;
     try{
-        tf2_buffer_.transform(msg, transformed_cloud, base_frame_, ros::Duration(0.0));
+        tf2_buffer_.transform(msg, transformed_cloud, base_frame_, ros::Time(0), fixed_frame_, ros::Duration(0.15));
     } catch (tf2::TransformException &ex){
         ROS_WARN("%s", ex.what());
         return;

@@ -131,10 +131,6 @@ void PathProcessor::processData(const nav_msgs::Path& last_path){
         }
         unsigned int index = getIndex(mx, my);
         data_map_[index] = data_value_;
-
-        if (i == pruned_path.poses.size() - 1){
-            data_map_[index] = goal_value_;
-        }
         
         if (index_flags_.find(index) == index_flags_.end()){
           occupied_indices_.push_back(index);
@@ -159,7 +155,11 @@ void PathProcessor::getOccupiedIndices(std::vector<size_t>& occupied_indices) {
 }
 
 void PathProcessor::getDataValue(unsigned char& data_value) const{
-  data_value = data_value_;
+    data_value = data_value_;
+}
+
+void PathProcessor::getGoalValue(unsigned char& goal_value) const{
+    goal_value = goal_value_;
 }
 
 void PathProcessor::publishDataMap(const std::vector<unsigned char>& data){
