@@ -32,6 +32,10 @@ public:
     void getCharMap(std::vector<unsigned char>& data_map) override;
     void getOccupiedIndices(std::vector<size_t>& occupied_indices) override;
     void getDataValue(unsigned char& data_value) const override;
+    void getGoalValue(unsigned char& goal_value) const override;
+    void hasGoalValue(bool& has_goal) {
+        has_goal = true;
+    }
 private:
     void onPathReceived(const nav_msgs::Path::ConstPtr& msg);
     void processData(const nav_msgs::Path& last_path);

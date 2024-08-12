@@ -33,6 +33,10 @@ public:
     void getCharMap(std::vector<unsigned char>& data_map) override;
     void getOccupiedIndices(std::vector<size_t>& occupied_indices) override;
     void getDataValue(unsigned char& data_value) const override;
+    void getGoalValue(unsigned char& goal_value) const override{goal_value = 0;}
+    void hasGoalValue(bool& has_goal) override{
+        has_goal = false;
+    }
 private:
     void onPointCloud2Received(const sensor_msgs::PointCloud2::ConstPtr& msg);
     void onLaserScanReceived(const sensor_msgs::LaserScan::ConstPtr& msg);
@@ -48,6 +52,7 @@ private:
     std::string input_topic_;
     std::string output_topic_;
     std::string base_frame_;
+    std::string fixed_frame_;
     ros::NodeHandle nh_, private_nh_, ps_nh_;
     ros::Subscriber subscriber_;
     ros::Publisher publisher_, data_map_pub_;
